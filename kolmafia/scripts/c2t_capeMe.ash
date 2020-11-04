@@ -101,7 +101,7 @@ boolean c2t_capeCompare(cape c1,cape c2) {
 
 cape c2t_capeMeArgs(string arg) {
 	//oh boy, lots of magic numbers ahead; reference in c2t_getCurrentCape()
-	switch (arg) {
+	switch (to_lower_case(arg)) {
 		//===MUSCLE CAPES===
 		//+3 to all resists
 		case "res":
