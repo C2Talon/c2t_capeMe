@@ -1,5 +1,7 @@
 # c2t_capeMe
 
+Note: This script is depreciated. Kolmafia has the built-in CLI command `retrocape` for it now.
+
 Kolmafia script to handle changing modes of the knock-off retro superhero cape via the CLI or as a function.
 
 `svn checkout https://github.com/c2talon/c2t_capeMe/branches/master/kolmafia/`
