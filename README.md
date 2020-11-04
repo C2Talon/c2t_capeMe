@@ -1,6 +1,6 @@
 # c2t_capeMe
 
-Kolmafia script to automatically handle changing modes of the knock-off retro superhero cape.
+Kolmafia script to handle changing modes of the knock-off retro superhero cape via the CLI.
 
 `svn checkout https://github.com/c2talon/c2t_capeMe/branches/master/kolmafia/`
 
