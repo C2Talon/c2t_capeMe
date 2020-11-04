@@ -4,12 +4,19 @@
 //handler to change modes of the knock-off retro superhero cape
 
 
-string ITEM_NAME = "knock-off retro superhero cape";
+string IOTM_202011 = "knock-off retro superhero cape";
 
 record cape {
 	int name;
 	int mode;
 };
+
+//eponymous function for use in scripts
+//name is choice number for cape type
+//mode is choice number for mode type
+//see c2t_getCurrentCape() for what the numbers mean and ranges
+//aborts on failure
+void c2t_capeMe(int name,int mode);
 
 //returns current cape
 cape c2t_getCurrentCape();
@@ -32,14 +39,30 @@ void main(string arg) {
 	if (!c2t_capeCompare(current,target))
 		c2t_capeMeChoice(current,target);
 	else {
-		print(`The {ITEM_NAME} is already set for {arg}`);
+		print(`The {IOTM_202011} is already set for {arg}`);
 		return;
 	}
 
 	if (c2t_capeCompare(target,c2t_getCurrentCape()))
-		print(`Successfully changed the {ITEM_NAME} for {arg}`,"blue");
+		print(`Successfully changed the {IOTM_202011} for {arg}`,"blue");
 	else
-		print(`Something went wrong changing the {ITEM_NAME}.`,"red");
+		abort(`Something went wrong changing the {IOTM_202011}.`);
+}
+
+//could probably be void if I'm just going to have it abort on falses
+void c2t_capeMe(int name,int mode) {
+	if (name >= 1 && name <= 3 && mode >= 2 && mode <= 4) {
+		cape target = new cape(name,mode);
+		cape current = c2t_getCurrentCape();
+		if (!c2t_capeCompare(current,target))
+			c2t_capeMeChoice(current,target);
+		else
+			return;
+		if (c2t_capeCompare(target,c2t_getCurrentCape()))
+			return;
+		abort(`{IOTM_202011} was not set correctly`);
+	}
+	abort("Invalid input for c2t_capeMe()");
 }
 
 cape c2t_getCurrentCape() {
@@ -89,14 +112,13 @@ void c2t_capeMeChoice(cape current,cape target) {
 			visit_url("choice.php?pwd&whichchoice=1437&option="+target.mode,true,true);
 	}
 	else
-		abort(`Unable to get into the choice for {ITEM_NAME}.`);
+		abort(`Unable to get into the choice for {IOTM_202011}.`);
 }
 
 boolean c2t_capeCompare(cape c1,cape c2) {
 	if (c1.name == c2.name && c1.mode == c2.mode)
 		return true;
-	else
-		return false;
+	return false;
 }
 
 cape c2t_capeMeArgs(string arg) {
