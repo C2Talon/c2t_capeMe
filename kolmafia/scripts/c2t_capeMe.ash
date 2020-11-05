@@ -1,134 +1,17 @@
 //c2t
 //c2t capeMe
 
-//handler to change modes of the knock-off retro superhero cape
 
-
-string IOTM_202011 = "knock-off retro superhero cape";
-
-record cape {
-	int name;
-	int mode;
-};
-
-//eponymous function for use in scripts
-//name is choice number for cape type
-//mode is choice number for mode type
-//see c2t_getCurrentCape() for what the numbers mean and ranges
-//aborts on failure
-void c2t_capeMe(int name,int mode);
-
-//returns current cape
-cape c2t_getCurrentCape();
-
-//handles the choice adventures
-void c2t_capeMeChoice(cape current,cape target);
-
-//returns whether 2 capes are the same or not
-boolean c2t_capeCompare(cape c1,cape c2);
-
-//handler for arguments from CLI call
-cape c2t_capeMeArgs(string arg);
-
+//wrapper for the CLI command "retrocape" to have arguments that have meaning
+//mostly because I'm never going to remember which combo of things do what
 void main(string arg) {
-	cape target = c2t_capeMeArgs(arg);
-	if (c2t_capeCompare(target,new cape(0,0)))
-		return;
-	cape current = c2t_getCurrentCape();
-
-	if (!c2t_capeCompare(current,target))
-		c2t_capeMeChoice(current,target);
-	else {
-		print(`The {IOTM_202011} is already set for {arg}`);
-		return;
-	}
-
-	if (c2t_capeCompare(target,c2t_getCurrentCape()))
-		print(`Successfully changed the {IOTM_202011} for {arg}`,"blue");
-	else
-		abort(`Something went wrong changing the {IOTM_202011}.`);
-}
-
-//could probably be void if I'm just going to have it abort on falses
-void c2t_capeMe(int name,int mode) {
-	if (name >= 1 && name <= 3 && mode >= 2 && mode <= 4) {
-		cape target = new cape(name,mode);
-		cape current = c2t_getCurrentCape();
-		if (!c2t_capeCompare(current,target))
-			c2t_capeMeChoice(current,target);
-		else
-			return;
-		if (c2t_capeCompare(target,c2t_getCurrentCape()))
-			return;
-		abort(`{IOTM_202011} was not set correctly`);
-	}
-	abort("Invalid input for c2t_capeMe()");
-}
-
-cape c2t_getCurrentCape() {
-	string[int] capeName = {
-		1: "Vampire Slicer trench cape",
-		2: "Heck General cloak",
-		3: "Robot Police cape"
-	};
-	string[int] capeMode = {
-		2: "Hold Me",
-		3: "Thrill Me",
-		4: "Kiss Me",
-		5: "Kill Me"
-	};
-
-	cape result;
-	buffer buf = visit_url('desc_item.php?whichitem=630054973');
-	foreach i in capeName
-		if (buf.contains_text(capeName[i])) {
-			result.name = i;
-			break;
-		}
-	foreach i in capeMode
-		if (buf.contains_text('reads &quot;'+capeMode[i]+'.&quot;')) {
-			result.mode = i;
-			break;
-		}
-	return result;
-}
-
-void c2t_capeMeChoice(cape current,cape target) {
-	buffer buf = visit_url("inventory.php?action=hmtmkmkm");
-	//if somehow on the cape selection, swap to mode selection
-	if (buf.contains_text('name=whichchoice value=1438'))
-		buf = visit_url("choice.php?pwd&whichchoice=1438&option=4",true,true);
-	if (buf.contains_text('name=whichchoice value=1437')) {
-		if (current.name != target.name) {
-			/* run_choice() not being reliable for some reason. Might be due to still being in choice while rapidly testing this, so just going to be explicit with visit_url()s
-			run_choice(1);
-			run_choice(target.name);
-			*/
-			visit_url("choice.php?pwd&whichchoice=1437&option=1",true,true);
-			visit_url("choice.php?pwd&whichchoice=1438&option="+target.name,true,true);
-		}
-		if (current.mode != target.mode)
-			//run_choice(target.mode);
-			visit_url("choice.php?pwd&whichchoice=1437&option="+target.mode,true,true);
-	}
-	else
-		abort(`Unable to get into the choice for {IOTM_202011}.`);
-}
-
-boolean c2t_capeCompare(cape c1,cape c2) {
-	if (c1.name == c2.name && c1.mode == c2.mode)
-		return true;
-	return false;
-}
-
-cape c2t_capeMeArgs(string arg) {
-	//oh boy, lots of magic numbers ahead; reference in c2t_getCurrentCape()
 	switch (to_lower_case(arg)) {
 		//===MUSCLE CAPES===
 		//+3 to all resists
 		case "res":
 		case "resistance":
-			return new cape(1,2);
+			cli_execute("retrocape vampire hold");
+			break;
 		//extra mus stats at end of combat
 		case "mus":
 		case "mus stat":
@@ -136,18 +19,23 @@ cape c2t_capeMeArgs(string arg) {
 		case "muscle":
 		case "muscle stat":
 		case "muscle stats":
-			return new cape(1,3);
-		//gives skill to lifesteal
+			cli_execute("retrocape vampire thrill");
+			break;
+		//grants skill to lifesteal
+		case "life steal":
 		case "lifesteal":
-			return new cape(1,4);
-		//gives skill to instantly kills undead if weilding sword
+			cli_execute("retrocape vampire kiss");
+			break;
+		//grants skill to instantly kill undead if wielding sword
 		case "undead":
-			return new cape(1,5);
+			cli_execute("retrocape vampire kill");
+			break;
 
-		//==MYSTICALITY CAPES===
+		//===MYSTICALITY CAPES===
 		//stuns enemies at start of combat
 		case "stun":
-			return new cape(2,2);
+			cli_execute("retrocape heck hold");
+			break;
 		//extra mys stats at end of combat
 		case "mys":
 		case "mys stat":
@@ -155,43 +43,49 @@ cape c2t_capeMeArgs(string arg) {
 		case "mysticality":
 		case "mysticality stat":
 		case "mysticality stats":
-			return new cape(2,3);
-		//gives skill that is a yellow ray that gives 100 turns of "everything looks yellow"
+			cli_execute("retrocape heck thrill");
+			break;
+		//grants skill that is a yellow ray that gives 100 turns of "everything looks yellow"
 		case "yellow ray":
 		case "yellowray":
 		case "yr":
-			return new cape(2,4);
+			cli_execute("retrocape heck kiss");
+			break;
 		//spells deal spooky damage in addition to what they already do
 		case "lantern":
-			return new cape(2,5);
+			cli_execute("retrocape heck kill");
+			break;
 
 		//===MOXIE CAPES===
-		//gives skill to delevel enemies 10%, or 20% on constructs
+		//grants skill to delevel enemies 10%, or 20% on constructs
 		case "delevel":
-			return new cape(3,2);
-		//gives mox stats at end of combat
+			cli_execute("retrocape robot hold");
+			break;
+		//extra mox stats at end of combat
 		case "mox":
 		case "mox stat":
 		case "mox stats":
 		case "moxie":
 		case "moxie stat":
 		case "moxie stats":
-			return new cape(3,3);
-		//gives a sleaze damage skill
+			cli_execute("retrocape robot thrill");
+			break;
+		//grants a sleaze damage skill
 		case "sleaze":
-			return new cape(3,4);
-		//gives skill that auto-crits if wielding a gun
+			cli_execute("retrocape robot kiss");
+			break;
+		//grants skill that auto-crits if wielding a gun
 		case "crit gun":
-			return new cape(3,5);
+			cli_execute("retrocape robot kill");
+			break;
 
 		//help?
 		case "help":
 			print("valid arguments: mus | res | lifesteal | undead | mys | stun | yr | lantern | mox | delevel | sleaze | crit gun");
-			return new cape(0,0);//trying to not get a stack trace with this
+			break;
 
 		default:
-			abort(`Invalid argument: {arg}`);
-			return new cape(0,0);//mafia wants a return even with the abort above
+			print(`"{arg}" is an invalid argument for c2t_capeme. Try "c2t_capeme help" for valid arguments.`,"red");
 	}
 }
 
