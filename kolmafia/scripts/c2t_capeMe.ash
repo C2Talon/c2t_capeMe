@@ -8,6 +8,11 @@ void main(string arg) {
 	switch (to_lower_case(arg)) {
 		//===MUSCLE CAPES===
 		//+3 to all resists
+		case "ele":
+		case "elemental":
+		case "elemental resistance":
+		case "ele res":
+		case "res ele":
 		case "res":
 		case "resistance":
 			cli_execute("retrocape vampire hold");
